@@ -1,0 +1,102 @@
+<content id="data-content">
+    <style>
+        /* Insert your CSS overrides here */
+    </style>
+
+    <div class="template_root">
+        <div class="template--header">
+            {{#if @root.properties.showResultsCount}}
+                <div class="template--resultCount">
+                    <label class="ms-fontWeight-semibold">{{getCountMessage @root.data.totalItemsCount @root.inputQueryText}}</label>
+                </div>
+            {{/if}}
+
+            <div class="template--sort">
+                <pnp-sortfield 
+                    data-fields="{{JSONstringify @root.properties.dataSourceProperties.sortList}}" 
+                    data-default-selected-field="{{sort.selectedSortFieldName}}" 
+                    data-default-direction="{{sort.selectedSortDirection}}"
+                    data-theme-variant="{{JSONstringify @root.theme}}">
+                </pnp-sortfield>    
+            </div>
+        </div>
+
+        <my-custom-component data-pages="{{JSONstringify @root.data}}"></my-custom-component>
+
+        <!-- <ul class="template_defaultList">
+            {{#each data.items as |item|}} -->
+                
+            <!-- <li> -->
+                <!-- <pnp-iconfile class="icon" data-extension="{{slot item @root.slots.FileType}}" data-theme-variant="{{JSONstringify @root.theme}}"></pnp-iconfile>
+                <span class="example-themePrimary"><a href="{{slot item @root.slots.Path}}">{{slot item @root.slots.Title}}</a></span> -->
+                <!-- <label data-ui-test-id="customHandlebarsHelper">{{myHelper 'custom'}}</label> -->
+
+                <!-- data-my-string-param="{{@root.properties.layoutProperties.myTextProperty}}" 
+                data-my-object-param="{{JSONstringify this 2}}"
+                data-my-date-param="01/01/2020"
+                data-my-number-param="{{@index}}"
+                data-my-boolean-param="true" -->
+                
+
+                <!-- <my-custom-component 
+                    data-page-url-param="{{slot item @root.slots.Path}}"
+                    data-page-title-param="{{slot item @root.slots.Title}}"
+                    data-page-file-type-param="{{slot item @root.slots.FileType}}"
+                    data-page-id="{{slot item @root.slots.ListItemID}}"
+                    data-pages="{{@root.data.items}}"
+                >
+                </my-custom-component> -->
+
+                
+            <!-- </li>
+
+            {{/each}}
+        </ul> -->
+    </div>
+
+    {{#if @root.properties.paging.showPaging}}
+        <pnp-pagination
+            data-total-items="{{@root.data.totalItemsCount}}"
+            data-hide-first-last-pages="{{@root.properties.paging.hideFirstLastPages}}"
+            data-hide-disabled="{{@root.properties.paging.hideDisabled}}"
+            data-hide-navigation="{{@root.properties.paging.hideNavigation}}"
+            data-range="{{@root.properties.paging.pagingRange}}"
+            data-items-count-per-page="{{@root.properties.paging.itemsCountPerPage}}"
+            data-current-page-number="{{@root.paging.currentPageNumber}}"
+        >
+        </pnp-pagination>
+    {{/if}}
+
+</content>
+
+<content id="placeholder-content">
+    <style>
+        /* Insert your CSS overrides here */
+    </style>
+
+    <div class="placeholder_root">
+        <ul class="template_defaultList">
+            {{#times 3}}   
+                <li class="template_listItem" tabindex="0">
+                    <div class="template_result">
+                            <div class="template_icon shimmer"></div>
+                            <div class="template_contentContainer">
+                                <span class="shimmer line" style="width: 60%"></span>
+                                <span class="shimmer line" style="width: 100%"></span>
+                                <span class="shimmer line" style="width: 100%"></span>
+                                <span class="shimmer line" style="width: 35%"></span>
+                                <span class="shimmer line" style="width: 20%"></span>                       
+                            </div>
+                    </div>
+                    <div class="template_previewContainer ms-hiddenSm">
+                        <div class="doc-container">
+                            <div class="img-container">
+                                <div class="shimmer img-preview" style="width: 120px;height: 70px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            {{/times}}
+        </ul>
+    </div>
+</content>
