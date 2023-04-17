@@ -1,6 +1,123 @@
 <content id="data-content">
     <style>
         /* Insert your CSS overrides here */
+        .dept-hdr{
+            background: rgb(19, 112, 206);
+            color: rgb(255, 255, 255);
+            padding: 2px 7px;
+            border-radius: 3px;
+            max-width: fit-content;
+            margin-bottom: 4px;
+            font-size: 12px;
+        }
+        .site-hdr{
+            margin-bottom: 7px;
+            color: #666;
+            font-weight: 600;
+        }
+        .template--defaultList .template--listItem{
+            margin-bottom: 20px;
+        }
+        .thumbnail--image img{
+            border-radius: 3px;
+        }
+        .example-themePrimary a {
+            color: {
+                {
+                    @root.theme.palette.themePrimary
+                }
+            }
+            
+        }
+        
+        {
+            {
+                #unless @root.properties.layoutProperties.showItemThumbnail
+            }
+        }
+
+        .page-link{
+            text-decoration: underline;
+            cursor: pointer;
+            color: {
+                {
+                    @root.theme.palette.themePrimary
+                }
+            }
+        }
+        .check-btn{
+            background: #48b748;
+            border: 3px solid #039303;
+        }
+        .uncheck-btn{
+            background: #dd8181;
+            border: 3px solid #cf5a5a;
+        }
+        .check-btn, .uncheck-btn{
+            color: #fff;
+            border-radius: 100%;
+            margin-right: 10px;
+        }
+        .check-btn i, .uncheck-btn i{
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .page-link-new-window{
+            margin-left: 5px;
+        }
+        .page-link-new-window i{
+            font-size: 13px;
+            font-weight: bold;
+        }
+        .due-date{
+            font-size: 12px;
+        }
+        .due-date i{
+            color: #c14d16;
+            margin-right: 3px;
+        }
+        .template--listItem--author{
+            padding-right: 10px;
+        }
+        
+        .template--listItem--result {
+            flex-basis: 100%!important;
+        }
+
+        .placeholder--defaultList, .template--defaultList {
+            padding: 0;
+        }
+        .placeholder--defaultList .template--listItem, .placeholder--defaultList .template--peopleListItem, .template--defaultList .template--listItem, .template--defaultList .template--peopleListItem {
+            display: -ms-flexbox;
+            display: flex;
+            padding: 10px;
+            outline: 0;
+            -ms-flex-pack: justify;
+            justify-content: space-between;
+            -ms-flex-wrap: wrap-reverse;
+            flex-wrap: wrap-reverse;
+        }
+        .placeholder--defaultList .template--listItem--result, .template--defaultList .template--listItem--result {
+            display: -ms-flexbox;
+            display: flex;
+            -ms-flex-positive: 0;
+            flex-grow: 0;
+            -ms-flex-negative: 1;
+            flex-shrink: 1;
+            -ms-flex-preferred-size: 74%;
+            flex-basis: 74%;
+            max-width: 74%;
+            word-break: break-word;
+            overflow: hidden;
+        }
+        .placeholder--defaultList .template--listItem--contentContainer, .template--defaultList .template--listItem--contentContainer {
+            display: -ms-flexbox;
+            display: flex;
+            width: 100%;
+            -ms-flex-direction: column;
+            flex-direction: column;
+            margin-right: 15px;
+        }
     </style>
 
     <div class="template_root">
