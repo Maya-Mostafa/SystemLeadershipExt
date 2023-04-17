@@ -24,10 +24,10 @@ export const getMyPropIds = (myUserProfileProps: any, profilePropName: string) =
     }
 };
 
-export const updateMyUserProfile = async (context: any, sphttpClient: any,  listItems: any, itemID: string,  profilePropName: string) =>{
+export const updateMyUserProfile = async (context: any, sphttpClient: any,  listItems: any, profilePropName: string) =>{
     
     console.log("listItems", listItems);
-    const updatedIds = Array.from(listItems.add(itemID));
+    const updatedIds = Array.from(listItems);
     console.log("updatedIds", updatedIds);
 
     const responseUrl = `https://pdsb1.sharepoint.com/_api/SP.UserProfiles.PeopleManager/SetMultiValuedProfileProperty` ;
