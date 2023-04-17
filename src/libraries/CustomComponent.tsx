@@ -1,13 +1,11 @@
 import * as React from 'react';
 import { BaseWebComponent } from '@pnp/modern-search-extensibility';
 import { IFrameDialog } from "@pnp/spfx-controls-react/lib/IFrameDialog";
-import { DialogType } from 'office-ui-fabric-react';
+import { DialogType, TooltipHost, IconButton, Icon } from 'office-ui-fabric-react';
 import * as ReactDOM from 'react-dom';
 import {SPHttpClient} from "@microsoft/sp-http";
 import { PageContext } from '@microsoft/sp-page-context';
 import { updateMyUserProfile, getmyUserProfileProps, getMyPropIds } from './Services/DataRequests';
-
-import ReadStatus from './ReadStatus';
 
 export interface IObjectParam {
     myProperty: string;
@@ -24,6 +22,8 @@ export interface ICustomComponentProps {
 }
 
 export function CustomComponent (props: ICustomComponentProps){
+
+    const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
 
     const profilePropName = 'PDSBSystemLinks';
     const [hideDialog, setHideDialog] = React.useState(true);
@@ -42,12 +42,17 @@ export function CustomComponent (props: ICustomComponentProps){
         // console.log("userPropsIds string", Array.from(userPropIds).toString());
     }, [Array.from(userPropIds).toString()]);
 
-    const readHandler = (pageId: string) => {
-        setUserPropIds(prev => {
-            const cloneIds = new Set(prev);
-            return cloneIds.add(pageId);
-        });
-        updateMyUserProfile(props.pageContext, props.sphttpClient, userPropIds, pageId, profilePropName);
+    const checkHandler = (pageId: string) => {
+        const cloneIds = new Set(userPropIds);
+        cloneIds.add(pageId);
+        setUserPropIds(cloneIds);
+        updateMyUserProfile(props.pageContext, props.sphttpClient, cloneIds, profilePropName);
+    };
+    const unCheckHandler = (pageId: string) => {
+        const cloneIds = new Set(userPropIds);
+        cloneIds.delete(pageId);
+        setUserPropIds(cloneIds);
+        updateMyUserProfile(props.pageContext, props.sphttpClient, cloneIds, profilePropName);
     };
 
     const dialogOpenHandler = (link: string) => {
@@ -56,39 +61,48 @@ export function CustomComponent (props: ICustomComponentProps){
     };
 
     console.log(props.pages);
+    console.log(props.pageContext);
 
     return (
         <>
-            <table cellPadding={5} style={{textAlign: 'left'}}> 
-                <tr>
-                    <th>ID</th>
-                    <th>Title</th>
-                    <th>Open</th>
-                    <th>is Read</th>
-                    <th>Action</th>
-                </tr>
+            <ul className='template--defaultList'>
                 {props.pages.items.map(page => {
                     return (
-                        <tr>
-                            <td>{page.ListItemID}</td>
-                            <td>
-                                <a target='_blank' href={page.Path}>{page.Title}</a>
-                            </td>
-                            <td>
-                                <button onClick={() => dialogOpenHandler(page.Path)}>Open In Dialog</button>
-                            </td>
-                            <td>
-                                <ReadStatus listItemID={page.ListItemID} userPropIds={userPropIds} />
-                            </td>
-                            <td>
-                                {!userPropIds.has(page.ListItemID) && 
-                                    <button onClick={() => readHandler(page.ListItemID)}>Read!</button>
-                                }
-                            </td>
-                        </tr>
-                    );
+                        <li className='template--listItem'>
+                            {!userPropIds.has(page.ListItemID) 
+                                ?
+                                <TooltipHost content="Check done" calloutProps={{ gapSpace: 0 }}>
+                                    <IconButton className='uncheck-btn' onClick={() => checkHandler(page.ListItemID)} iconProps={{ iconName: 'Accept' }} />
+                                </TooltipHost>
+                                :
+                                <TooltipHost content="Uncheck done" calloutProps={{ gapSpace: 0 }}>
+                                    <IconButton className='check-btn' onClick={() => unCheckHandler(page.ListItemID)} iconProps={{ iconName: 'Accept' }} />
+                                </TooltipHost>
+                            }
+                            <div className='template--listItem--result'>
+                                <div className='template--listItem--contentContainer'>
+                                    {page.RefinableString129 && <span className="dept-hdr">{page.RefinableString129}</span>} 
+                                    <span className='template--listItem--title example-themePrimary'>
+                                        <a className='page-link' onClick={() => dialogOpenHandler(page.Path)}>{page.Title}</a>
+                                        <a data-interception="off" className='page-link-new-window' target='_blank' href={page.Path}><Icon iconName='OpenInNewWindow' /></a>
+                                    </span>
+                                    <span>
+                                        <span className='template--listItem--author'>{page.AuthorOWSUSER.split('|')[1]}</span>
+                                        <span className='template--listItem--date'>{new Date(page.Created).toLocaleDateString('en-us', dateOptions)}</span>
+                                    </span>
+                                    {(page.TaskDueDateOWSDATE || page.RefinableString110) && <span className='due-date'><Icon iconName='Calendar' />Due by: {page.TaskDueDateOWSDATE || page.RefinableString110}</span> }
+                                    {page.RefinableString137 &&  <div>Attachments: {page.RefinableString137}</div>}
+                                </div>
+                            </div>
+                            <div className='template--listItem--thumbnailContainer'>
+                                <div className='thumbnail--image'>
+                                    <img width="120" src={page.AutoPreviewImageUrl} />
+                                </div>
+                            </div>
+                        </li>
+                    )
                 })}
-            </table>
+            </ul>
             <IFrameDialog 
                 url={pageUrl}
                 hidden={hideDialog}
