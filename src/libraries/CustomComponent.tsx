@@ -24,7 +24,7 @@ export interface ICustomComponentProps {
 
 export function CustomComponent (props: ICustomComponentProps){
 
-    const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+    const dateOptions: any = { year: 'numeric', month: 'long', day: 'numeric' };
 
     const profilePropSystemLinks = 'PDSBSystemLinks';
     const [userSysLinksPropIds, setUserSysLinksPropIds] = React.useState(new Set());
@@ -106,8 +106,9 @@ export function CustomComponent (props: ICustomComponentProps){
                                 <div className='template--listItem--contentContainer'>
                                     {page.RefinableString129 && <span className="dept-hdr">{page.RefinableString129}</span>} 
                                     <span className='template--listItem--title example-themePrimary'>
-                                        <a className='page-link' onClick={() => dialogOpenHandler(page.Path)}>{page.Title}</a>
-                                        <a data-interception="off" className='page-link-new-window' target='_blank' href={page.Path}><Icon iconName='OpenInNewWindow' /></a>
+                                        <a data-interception="off" target='_blank' href={page.Path} className='page-link'>{page.Title}</a>
+                                        {/* <a className='page-link' onClick={() => dialogOpenHandler(page.Path)}>{page.Title}</a> */}
+                                        {/* <a data-interception="off" className='page-link-new-window' target='_blank' href={page.Path}><Icon iconName='OpenInNewWindow' /></a> */}
                                     </span>
                                     <span>
                                         {page.AuthorOWSUSER &&<span className='template--listItem--author'>{page.AuthorOWSUSER.split('|')[1]}</span>}
