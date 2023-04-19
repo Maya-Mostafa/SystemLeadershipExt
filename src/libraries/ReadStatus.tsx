@@ -17,5 +17,5 @@ export default function ReadStatus (props: IReadStatusProps){
                 <span style={{color: 'red'}}>No</span>
             }
         </>
-    )
+    );
 }
