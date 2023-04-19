@@ -51,3 +51,32 @@ export const updateMyUserProfile = async (context: any, sphttpClient: any,  list
         console.log('User Profile property '+profilePropName+' is updated!');
     }
 };
+
+export const getDefaultTaskListID = async (msGraphClientFactory: any) => {
+    const grapClient = await msGraphClientFactory.getClient();
+    const graphGetResponse = await grapClient.api("/me/todo/lists").get();
+    return graphGetResponse.value.filter(item => item.wellknownListName === 'defaultList')[0].id;
+};
+
+export const addToTasks = async (msGraphClientFactory: any, defaultTaskListId: string, page: any) => {
+
+    const todoTask = {
+        title: page.Title,
+        body: {
+            "content": `${page.Title} (${page.RefinableString129}) - ${page.Path}`,
+            "contentType": "text"
+        },
+        linkedResources: [
+           {
+              webUrl: page.Path,
+              applicationName: 'System Leadership News',
+            //   displayName: 'For Action: PDSB’s Response to the Right To Read: Shifting Literacy Instruction and Assessment in Peel Updated'
+           }
+        ]
+     };
+
+    const grapClient = await msGraphClientFactory.getClient();
+    const graphGetResponse = await grapClient.api(`/me/todo/lists/${defaultTaskListId}/tasks`).post(todoTask);
+    console.log("Todo Task Created!");
+    return graphGetResponse;
+};

@@ -3,9 +3,9 @@ import { BaseWebComponent } from '@pnp/modern-search-extensibility';
 import { IFrameDialog } from "@pnp/spfx-controls-react/lib/IFrameDialog";
 import { DialogType, TooltipHost, IconButton, Icon } from 'office-ui-fabric-react';
 import * as ReactDOM from 'react-dom';
-import {SPHttpClient} from "@microsoft/sp-http";
+import {MSGraphClientFactory, SPHttpClient} from "@microsoft/sp-http";
 import { PageContext } from '@microsoft/sp-page-context';
-import { updateMyUserProfile, getmyUserProfileProps, getMyPropIds } from './Services/DataRequests';
+import { updateMyUserProfile, getmyUserProfileProps, getMyPropIds, getDefaultTaskListID, addToTasks } from './Services/DataRequests';
 
 export interface IObjectParam {
     myProperty: string;
@@ -18,6 +18,7 @@ export interface ICustomComponentProps {
     pageId?: string;
     pageContext?: PageContext; 
     sphttpClient?: SPHttpClient;
+    msGraphClientFactory?: MSGraphClientFactory;
     pages?: any;
 }
 
@@ -25,39 +26,61 @@ export function CustomComponent (props: ICustomComponentProps){
 
     const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
 
-    const profilePropName = 'PDSBSystemLinks';
+    const profilePropSystemLinks = 'PDSBSystemLinks';
+    const [userSysLinksPropIds, setUserSysLinksPropIds] = React.useState(new Set());
+
+    const profilePropTodos = 'PDSBMyTodos';
+    const [userTodosIds, setUserTodosIds] = React.useState(new Set());
+
     const [hideDialog, setHideDialog] = React.useState(true);
-    const [userPropIds, setUserPropIds] = React.useState(new Set());
     const [pageUrl, setPageUrl] = React.useState('');
 
     React.useEffect(()=>{
         getmyUserProfileProps(props.sphttpClient).then(myUserProfileProps => {
-            const myPropsIds = getMyPropIds(myUserProfileProps, profilePropName);
-            setUserPropIds(myPropsIds);
-        });
+            const myPropsSysLinksIds = getMyPropIds(myUserProfileProps, profilePropSystemLinks);
+            setUserSysLinksPropIds(myPropsSysLinksIds);
+
+            const myPropsTodosIds = getMyPropIds(myUserProfileProps, profilePropTodos);
+            setUserTodosIds(myPropsTodosIds);
+        });        
     }, []);
 
     React.useEffect(()=>{
         // console.log("userEffect run!");
         // console.log("userPropsIds string", Array.from(userPropIds).toString());
-    }, [Array.from(userPropIds).toString()]);
+    }, [Array.from(userSysLinksPropIds).toString(), Array.from(userTodosIds).toString()]);
 
     const checkHandler = (pageId: string) => {
-        const cloneIds = new Set(userPropIds);
+        const cloneIds = new Set(userSysLinksPropIds);
         cloneIds.add(pageId);
-        setUserPropIds(cloneIds);
-        updateMyUserProfile(props.pageContext, props.sphttpClient, cloneIds, profilePropName);
+        setUserSysLinksPropIds(cloneIds);
+        updateMyUserProfile(props.pageContext, props.sphttpClient, cloneIds, profilePropSystemLinks);
     };
     const unCheckHandler = (pageId: string) => {
-        const cloneIds = new Set(userPropIds);
+        const cloneIds = new Set(userSysLinksPropIds);
         cloneIds.delete(pageId);
-        setUserPropIds(cloneIds);
-        updateMyUserProfile(props.pageContext, props.sphttpClient, cloneIds, profilePropName);
+        setUserSysLinksPropIds(cloneIds);
+        updateMyUserProfile(props.pageContext, props.sphttpClient, cloneIds, profilePropSystemLinks);
     };
 
     const dialogOpenHandler = (link: string) => {
         setPageUrl(link);
         setHideDialog(false);
+    };
+
+    const addTodoHandler = (page: any) => {
+        console.log("addTodoHandler");
+        if (!userTodosIds.has(page.ListItemID)){
+            console.log("addTodoHandler active");
+            getDefaultTaskListID(props.msGraphClientFactory).then(resId => {
+                addToTasks(props.msGraphClientFactory, resId, page);
+                
+                const cloneIds = new Set(userTodosIds);
+                cloneIds.add(page.ListItemID);
+                setUserTodosIds(cloneIds);
+                updateMyUserProfile(props.pageContext, props.sphttpClient, cloneIds, profilePropTodos);
+            });
+        }
     };
 
     console.log(props.pages);
@@ -69,7 +92,7 @@ export function CustomComponent (props: ICustomComponentProps){
                 {props.pages.items.map(page => {
                     return (
                         <li className='template--listItem'>
-                            {!userPropIds.has(page.ListItemID) 
+                            {!userSysLinksPropIds.has(page.ListItemID) 
                                 ?
                                 <TooltipHost content="Check done" calloutProps={{ gapSpace: 0 }}>
                                     <IconButton className='uncheck-btn' onClick={() => checkHandler(page.ListItemID)} iconProps={{ iconName: 'Accept' }} />
@@ -87,11 +110,17 @@ export function CustomComponent (props: ICustomComponentProps){
                                         <a data-interception="off" className='page-link-new-window' target='_blank' href={page.Path}><Icon iconName='OpenInNewWindow' /></a>
                                     </span>
                                     <span>
-                                        <span className='template--listItem--author'>{page.AuthorOWSUSER.split('|')[1]}</span>
+                                        {page.AuthorOWSUSER &&<span className='template--listItem--author'>{page.AuthorOWSUSER.split('|')[1]}</span>}
                                         <span className='template--listItem--date'>{new Date(page.Created).toLocaleDateString('en-us', dateOptions)}</span>
                                     </span>
                                     {(page.TaskDueDateOWSDATE || page.RefinableString110) && <span className='due-date'><Icon iconName='Calendar' />Due by: {page.TaskDueDateOWSDATE || page.RefinableString110}</span> }
                                     {page.RefinableString137 &&  <div>Attachments: {page.RefinableString137}</div>}
+                                
+                                    <div className='actions'>
+                                        <button><img width='20' src={require('./icons/Outlook.svg')} />Send by E-mail</button>
+                                        <button className={!userTodosIds.has(page.ListItemID) ? '' : 'actionDisabled'} onClick={()=> addTodoHandler(page)}><img width='20' src={require('./icons/Todo.svg')} />{!userTodosIds.has(page.ListItemID) ? 'Add' : 'Added'} to Todo</button>
+                                        <button><img width='20' src={require('./icons/Planner.svg')} />Add to Planner</button>
+                                    </div>
                                 </div>
                             </div>
                             <div className='template--listItem--thumbnailContainer'>
@@ -100,7 +129,7 @@ export function CustomComponent (props: ICustomComponentProps){
                                 </div>
                             </div>
                         </li>
-                    )
+                    );
                 })}
             </ul>
             <IFrameDialog 
@@ -124,20 +153,21 @@ export function CustomComponent (props: ICustomComponentProps){
 export class MyCustomComponentWebComponent extends BaseWebComponent {
     
     private sphttpClient: SPHttpClient;
-    private pageContext:PageContext;
+    private pageContext: PageContext;
+    private msGraphClientFactory: MSGraphClientFactory;
 
     public constructor() {
         super(); 
         this._serviceScope.whenFinished(()=>{
             this.pageContext = this._serviceScope.consume(PageContext.serviceKey);
-            this.sphttpClient= this._serviceScope.consume(SPHttpClient.serviceKey);
-            //const msGraphClientFactory: MSGraphClientFactory= this._serviceScope.consume(MSGraphClientFactory.serviceKey)
+            this.sphttpClient = this._serviceScope.consume(SPHttpClient.serviceKey);
+            this.msGraphClientFactory = this._serviceScope.consume(MSGraphClientFactory.serviceKey);
         });
     }
  
     public async connectedCallback() {
         let props = this.resolveAttributes();
-        const customComponent = <CustomComponent pageContext={this.pageContext} sphttpClient={this.sphttpClient} {...props}/>;
+        const customComponent = <CustomComponent pageContext={this.pageContext} sphttpClient={this.sphttpClient} msGraphClientFactory={this.msGraphClientFactory} {...props}/>;
         ReactDOM.render(customComponent, this);
     }    
 }
