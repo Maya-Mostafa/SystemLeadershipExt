@@ -1,11 +1,14 @@
 import * as React from 'react';
+import * as ReactDOM from 'react-dom';
 import { BaseWebComponent } from '@pnp/modern-search-extensibility';
 import { IFrameDialog } from "@pnp/spfx-controls-react/lib/IFrameDialog";
 import { DialogType, TooltipHost, IconButton, Icon } from 'office-ui-fabric-react';
-import * as ReactDOM from 'react-dom';
 import {MSGraphClientFactory, SPHttpClient} from "@microsoft/sp-http";
 import { PageContext } from '@microsoft/sp-page-context';
+import { WebPartContext } from "@microsoft/sp-webpart-base";
 import { updateMyUserProfile, getmyUserProfileProps, getMyPropIds, getDefaultTaskListID, addToTasks } from './Services/DataRequests';
+import { NewTask } from './NewTask/NewTask';
+import spservices from './Services/spservices';
 
 export interface IObjectParam {
     myProperty: string;
@@ -34,6 +37,10 @@ export function CustomComponent (props: ICustomComponentProps){
 
     const [hideDialog, setHideDialog] = React.useState(true);
     const [pageUrl, setPageUrl] = React.useState('');
+
+    const [showPlannerDlg, setShowPlannerDlg] = React.useState(false);
+    const _spservices = new spservices(props.pageContext, props.msGraphClientFactory);
+    //const _spservices = null;
 
     React.useEffect(()=>{
         getmyUserProfileProps(props.sphttpClient).then(myUserProfileProps => {
@@ -83,8 +90,8 @@ export function CustomComponent (props: ICustomComponentProps){
         }
     };
 
-    console.log(props.pages);
-    console.log(props.pageContext);
+    // console.log(props.pages);
+    // console.log(props.pageContext);
 
     return (
         <>
@@ -120,7 +127,7 @@ export function CustomComponent (props: ICustomComponentProps){
                                     <div className='actions'>
                                         <button><img width='20' src={require('./icons/Outlook.svg')} />Send by E-mail</button>
                                         <button className={!userTodosIds.has(page.ListItemID) ? '' : 'actionDisabled'} onClick={()=> addTodoHandler(page)}><img width='20' src={require('./icons/Todo.svg')} />{!userTodosIds.has(page.ListItemID) ? 'Add' : 'Added'} to Todo</button>
-                                        <button><img width='20' src={require('./icons/Planner.svg')} />Add to Planner</button>
+                                        <button onClick={() => setShowPlannerDlg(true)}><img width='20' src={require('./icons/Planner.svg')} />Add to Planner</button>
                                     </div>
                                 </div>
                             </div>
@@ -133,6 +140,9 @@ export function CustomComponent (props: ICustomComponentProps){
                     );
                 })}
             </ul>
+            {showPlannerDlg &&
+                <NewTask displayDialog={showPlannerDlg} onDismiss={() => setShowPlannerDlg(false)} spservice={_spservices} />
+            }
             <IFrameDialog 
                 url={pageUrl}
                 hidden={hideDialog}
