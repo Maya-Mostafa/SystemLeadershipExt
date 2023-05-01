@@ -2,6 +2,8 @@
 
 This project shows how to implement custom data sources for the 'Search Results' Web Part.
 
+![alt System News](https://github.com/PDSB-sps/SystemLeadershipExt/blob/main/src/screenshots/srch_ext.png)
+
 ### Documentation
 
 A complete step-by-step tutorial is available [here](https://microsoft-search.github.io/pnp-modern-search/extensibility/)
