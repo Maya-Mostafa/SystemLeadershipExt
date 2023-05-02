@@ -4,4 +4,5 @@ export interface INewTaskProps{
   spservice: spservice;
   displayDialog:boolean;
   onDismiss: (refresh:boolean) => void;
+  taskDetails: any;
 }
