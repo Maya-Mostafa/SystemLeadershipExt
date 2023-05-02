@@ -17,12 +17,16 @@ import {
   SpinnerSize,
   Dialog,
   DialogType,
+  ContextualMenu,
+  initializeIcons
 } from 'office-ui-fabric-react';
 import { IAssignments } from '../Interfaces/IAssignments';
 import { IAssignsProps } from './IAssignsProps';
 import { IAssignsState } from './IAssignsState';
 import { IGroupMember, IMember } from '../Interfaces/IGroupMembers';
 import { AssignMode } from './../Assigns/EAssignMode';
+
+initializeIcons();
 
 export class Assigns extends React.Component<IAssignsProps, IAssignsState> {
   private _spservices: spservices = this.props.spservice;
@@ -452,13 +456,19 @@ export class Assigns extends React.Component<IAssignsProps, IAssignsState> {
           hidden={false}
           onDismiss={this._onCalloutDismiss}
           minWidth={350}
-          title={strings.AssignsLabel}
           dialogContentProps={{
-            type: DialogType.normal
+            type: DialogType.normal,
+            title: 'Assign'
           }}
           modalProps={{
-            isBlocking: false,
-            styles: { main: { maxWidth: 350 } }
+            isBlocking: true,
+            styles: { main: { maxWidth: 350 } },
+            closeButtonAriaLabel: 'Close',
+            dragOptions : {
+              moveMenuItemText: 'Move',
+              closeMenuItemText: 'Close',
+              menu: ContextualMenu,
+            }
           }}>
           <div className={styles.calloutHeader}>
             <TextField
