@@ -82,6 +82,10 @@ const textFieldStylesdatePicker: ITextFieldProps = {
 
 const addFriendIcon: IIconProps = { iconName: 'AddFriend', style: { marginLeft: 0, paddingLeft: 0 } };
 const taskBoardIcon: IIconProps = {iconName: 'Taskboard', style: { left: 5, marginLeft: 0, paddingLeft: 0 }};
+
+const loadingElement = <div><div>Loading...</div>Please wait, we are retrieving all your plans which may take a few more seconds!</div> ;
+
+
 /**
  * New task
  */
@@ -338,6 +342,7 @@ export class NewTask extends React.Component<INewTaskProps, INewTaskState> {
     this.setState({dueDate: moment(date).format('L')});
   }
 
+  
 
   /**
    * Renders new task
@@ -367,8 +372,9 @@ export class NewTask extends React.Component<INewTaskProps, INewTaskState> {
               menu: ContextualMenu,
             }
           }}>
+          
           {this.state.isLoading ? (
-            <Spinner type={SpinnerType.normal} label='loading...' />
+            <Spinner type={SpinnerType.normal} label='Loading... Please wait, we are retrieving all your plans which may take a few more seconds!' />
           ) : (
             <>
               <Stack gap='10'>
