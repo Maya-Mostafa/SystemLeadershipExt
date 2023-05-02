@@ -64,3 +64,11 @@ https://pnp.github.io/pnpjs/graph/planner/
 https://pnp.github.io/pnpjs/graph/users/
 
 
+### Planner task details update
+- MS Graph API ... create Planner task including details/description using one single HTTP request?
+https://stackoverflow.com/questions/75316467/ms-graph-api-create-planner-task-including-details-description-using-one-sin?rq=1
+https://stackoverflow.com/questions/48851611/how-can-i-create-a-planner-task-with-a-description
+https://learn.microsoft.com/en-us/graph/api/resources/planner-overview?view=graph-rest-1.0#common-planner-error-conditions
+
+
+
