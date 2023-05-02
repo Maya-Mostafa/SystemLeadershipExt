@@ -39,6 +39,7 @@ export function CustomComponent (props: ICustomComponentProps){
     const [pageUrl, setPageUrl] = React.useState('');
 
     const [showPlannerDlg, setShowPlannerDlg] = React.useState(false);
+    const [taskDetails, setTaskDetails] = React.useState(null);
     const _spservices = new spservices(props.pageContext, props.msGraphClientFactory);
     //const _spservices = null;
 
@@ -90,11 +91,24 @@ export function CustomComponent (props: ICustomComponentProps){
         }
     };
 
+    const taskDetailsPlannerHandler = (pageDetails: any) => {
+        setTaskDetails(pageDetails);
+        setShowPlannerDlg(true);
+    };
+
+    const spTestFncs = () => {
+        _spservices.getUserGroups().then(res => console.log("---- spServices : geUserGroups ----", res));
+        _spservices.getUserPlansByGroupId('acbcf16c-c862-4c61-ae32-8f629366451a').then(res => console.log("---- spServices : getUserPlansByGroupId ----", res)); //Portal & Collaboration
+    };
+
+
+
     // console.log(props.pages);
     // console.log(props.pageContext);
 
     return (
         <>
+            {/* <button onClick={spTestFncs}>Test sp functions</button> */}
             <ul className='template--defaultList'>
                 {props.pages.items.map(page => {
                     return (
@@ -127,7 +141,7 @@ export function CustomComponent (props: ICustomComponentProps){
                                     <div className='actions'>
                                         <button><img width='20' src={require('./icons/Outlook.svg')} />Send by E-mail</button>
                                         <button className={!userTodosIds.has(page.ListItemID) ? '' : 'actionDisabled'} onClick={()=> addTodoHandler(page)}><img width='20' src={require('./icons/Todo.svg')} />{!userTodosIds.has(page.ListItemID) ? 'Add' : 'Added'} to Todo</button>
-                                        <button onClick={() => setShowPlannerDlg(true)}><img width='20' src={require('./icons/Planner.svg')} />Add to Planner</button>
+                                        <button onClick={() => taskDetailsPlannerHandler(page)}><img width='20' src={require('./icons/Planner.svg')} />Add to Planner</button>
                                     </div>
                                 </div>
                             </div>
@@ -141,7 +155,12 @@ export function CustomComponent (props: ICustomComponentProps){
                 })}
             </ul>
             {showPlannerDlg &&
-                <NewTask displayDialog={showPlannerDlg} onDismiss={() => setShowPlannerDlg(false)} spservice={_spservices} />
+                <NewTask 
+                    displayDialog = {showPlannerDlg} 
+                    onDismiss = {() => setShowPlannerDlg(false)} 
+                    spservice = {_spservices} 
+                    taskDetails = {taskDetails}
+                />
             }
             <IFrameDialog 
                 url={pageUrl}
