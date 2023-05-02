@@ -9,6 +9,7 @@ import { WebPartContext } from "@microsoft/sp-webpart-base";
 import { updateMyUserProfile, getmyUserProfileProps, getMyPropIds, getDefaultTaskListID, addToTasks } from './Services/DataRequests';
 import { NewTask } from './NewTask/NewTask';
 import spservices from './Services/spservices';
+import SendEmail from './SendEmail/SendEmail';
 
 export interface IObjectParam {
     myProperty: string;
@@ -42,6 +43,8 @@ export function CustomComponent (props: ICustomComponentProps){
     const [taskDetails, setTaskDetails] = React.useState(null);
     const _spservices = new spservices(props.pageContext, props.msGraphClientFactory);
     //const _spservices = null;
+
+    const [showEmailDlg, setShowEmailDlg] = React.useState(false);
 
     React.useEffect(()=>{
         getmyUserProfileProps(props.sphttpClient).then(myUserProfileProps => {
@@ -159,6 +162,13 @@ export function CustomComponent (props: ICustomComponentProps){
                     displayDialog = {showPlannerDlg} 
                     onDismiss = {() => setShowPlannerDlg(false)} 
                     spservice = {_spservices} 
+                    taskDetails = {taskDetails}
+                />
+            }
+            {showEmailDlg &&
+                <SendEmail 
+                    displayDialog = {showEmailDlg} 
+                    onDismiss = {() => setShowEmailDlg(false)} 
                     taskDetails = {taskDetails}
                 />
             }
