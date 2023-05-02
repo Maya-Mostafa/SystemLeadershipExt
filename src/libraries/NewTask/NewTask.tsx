@@ -31,6 +31,8 @@ import {
   OverflowButtonType,
   PersonaSize,
   IFacepilePersona,
+  ContextualMenu,
+  initializeIcons
   } from 'office-ui-fabric-react';
 import { Assigns } from './../Assigns/Assigns';
 import { INewTaskProps } from './INewTaskProps';
@@ -40,6 +42,9 @@ import { IPlannerBucket } from '../Interfaces/IPlannerBucket';
 import { IPlannerPlanExtended } from '../Interfaces/IPlannerPlanExtended';
 import { IMember } from '../Interfaces/IGroupMembers';
 import { AssignMode } from '../Assigns/EAssignMode';
+
+initializeIcons();
+
 const DayPickerStrings: IDatePickerStrings = {
   months: [
     'January',
@@ -81,6 +86,9 @@ const taskBoardIcon: IIconProps = {iconName: 'Taskboard', style: { left: 5, marg
  * New task
  */
 export class NewTask extends React.Component<INewTaskProps, INewTaskState> {
+
+  
+
   private _PlansDropDownOption: IDropdownOption[] = [];
   private _assigns: IMember[] = [];
   private  _userPlans:IPlannerPlanExtended[]=[];
@@ -88,12 +96,14 @@ export class NewTask extends React.Component<INewTaskProps, INewTaskState> {
   constructor(props: INewTaskProps) {
     super(props);
 
+    console.log("this.props.taskDetails", this.props.taskDetails);
+
     this.state = {
       hideDialog: !this.props.displayDialog,
       hasError: false,
       errorMessage: '',
       planSelectedKey: '',
-      taskName: '',
+      taskName: this.props.taskDetails.Title,
       disableAdd: true,
       selectedBucket: undefined,
       buckets: [],
@@ -146,7 +156,10 @@ export class NewTask extends React.Component<INewTaskProps, INewTaskState> {
          assignments[user.id] = {"@odata.type": "#microsoft.graph.plannerAssignment", "orderHint": " !"};
       }
       taskInfo['assignments'] = assignments;
-      const addTaskResult = await this.props.spservice.addTask(taskInfo);
+      const taskBodyContent = `${this.props.taskDetails.Title} (${this.props.taskDetails.RefinableString129}) - ${this.props.taskDetails.Path}`;
+      const addTaskResult : any= await this.props.spservice.addTask(taskInfo, taskBodyContent);
+      console.log("addTaskResult", addTaskResult);
+      //const addTaskDetailsResult = await this.props.spservice.addTaskDetails(addTaskResult.id, 'Test task description hello 1234');
       this.setState({ hideDialog: true });
       this.props.onDismiss(true);
 
@@ -182,12 +195,14 @@ export class NewTask extends React.Component<INewTaskProps, INewTaskState> {
   private _getUserPlans = async () => {
     try {
         this._userPlans = await this.props.spservice.getUserPlans();
+        console.log("this._userPlans", this._userPlans);
       if (this._userPlans.length > 0) {
         for (const plan of this._userPlans) {
-          this._PlansDropDownOption.push({ key: String(plan.id), text: plan.title, data: { image: plan.planPhoto, groupId: plan.owner} });
+          this._PlansDropDownOption.push({ key: String(plan.id), text: plan.title, data: { image: '', groupId: plan.owner} });
         }
         // Get Planner Buckets
         const bucketsMenu = await this._getPlannerBuckets(String(this._PlansDropDownOption[0].key));
+        console.log("bucketsMenu", bucketsMenu);
         this.setState({
           buckets: bucketsMenu,
           selectedBucket: {key : bucketsMenu[0].key , name: bucketsMenu[0].name},
@@ -277,6 +292,12 @@ export class NewTask extends React.Component<INewTaskProps, INewTaskState> {
     }
   }
 
+  private _changeTaskName = (e:any, value: string) => {
+    console.log("e", e);
+    console.log("value", value);
+    this.setState({ taskName: value});
+  }
+
 
   private async _getAssignments(assignments: IMember[]): Promise<IFacepilePersona[]> {
     let personas: IFacepilePersona[] = [];
@@ -299,20 +320,15 @@ export class NewTask extends React.Component<INewTaskProps, INewTaskState> {
   }
 
   private _onCalloutDismiss = async  (assigns:IMember[]):Promise<void> => {
-
       this._assigns = assigns;
       const personas = await this._getAssignments(assigns);
       this.setState({ addAssigns: false , assignments: personas});
-
-
   }
   /**
    * Determines whether assign on
    */
   private _onAssign = (ev: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement |HTMLDivElement>) : void => {
-
       this.setState({addAssigns: !this.state.addAssigns, calloutTarget: ev.currentTarget});
-
   }
 
   /**
@@ -333,7 +349,6 @@ export class NewTask extends React.Component<INewTaskProps, INewTaskState> {
     return (
       <div>
         <Dialog
-
           hidden={hideDialog}
           onDismiss={this._closeDialog}
           minWidth={400}
@@ -343,9 +358,14 @@ export class NewTask extends React.Component<INewTaskProps, INewTaskState> {
             title: 'Add Task'
           }}
           modalProps={{
-            isBlocking: false,
+            isBlocking: true,
             styles: jsStyles.modalStyles,
-
+            closeButtonAriaLabel: 'Close',
+            dragOptions : {
+              moveMenuItemText: 'Move',
+              closeMenuItemText: 'Close',
+              menu: ContextualMenu,
+            }
           }}>
           {this.state.isLoading ? (
             <Spinner type={SpinnerType.normal} label='loading...' />
@@ -375,8 +395,9 @@ export class NewTask extends React.Component<INewTaskProps, INewTaskState> {
                       placeholder='Please enter task name'
                       required
                       onGetErrorMessage={this._validateTaskName}
-                      validateOnLoad={false}
+                      // validateOnLoad={false}
                       value={this.state.taskName}
+                      // onChange={() => this._changeTaskName}
                     />
                     <Stack gap='0'>
                       <CommandButton
