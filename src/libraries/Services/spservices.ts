@@ -20,7 +20,7 @@ import {
 } from '@pnp/pnpjs';
 
 import { spfi, SPFx as spSPFx} from "@pnp/sp";
-import { graphfi, SPFx as graphSPFx, DefaultHeaders} from "@pnp/graph";
+import { graphfi, SPFx as graphSPFx} from "@pnp/graph";
 import "@pnp/graph/planner";
 import "@pnp/graph/groups";
 import "@pnp/graph/users";
@@ -47,6 +47,7 @@ export default class spservices {
     console.log("pageContext", this.context)
     this.currentUser = this.context._user.email;
     this.msGraphClientFactory = this.msGraphClientFactory;
+    
   }
 
   /**
@@ -119,7 +120,8 @@ export default class spservices {
    * @param taskInfo
    * @returns task
    */
-  public async addTask(taskInfo: string[]): Promise<TaskAddResult> {
+  public async addTask(taskInfo: string[], taskBodyContent: string): Promise<TaskAddResult> {
+    console.log("taskInfo", taskInfo);
     try {
       this.graphClient = await this.msGraphClientFactory.getClient('3');
       const task = await this.graphClient
@@ -130,11 +132,46 @@ export default class spservices {
           bucketId: taskInfo['bucketId'],
           title: taskInfo['title'],
           dueDateTime: taskInfo['dueDate'] ? moment(taskInfo['dueDate']).toISOString() : undefined,
-          assignments: taskInfo['assignments']
+          assignments: taskInfo['assignments'],
+          details: {
+            description: taskBodyContent
+          }
         });
+      
+// /
 
       //const task: TaskAddResult = await graph.planner.tasks.add( taskInfo['planId'], taskInfo['title'], taskInfo['assignments'], taskInfo['bucketId']);
+
+      console.log("added Task", task);
       return task;
+    } catch (error) {
+      throw new Error('Error on add task');
+    }
+  }
+
+
+  /**
+   * Adds task details for newly added tasks
+   * @param taskId
+   * @returns taskDetails
+   */
+  public async addTaskDetails(taskId: string, description: string): Promise<TaskAddResult> {
+    //https://graph.microsoft.com/v1.0/planner/tasks/fWNmA_bfx0i7hhd03-8HbWQAGDkx/details
+    console.log("taskId", taskId);
+    try {
+      this.graphClient = await this.msGraphClientFactory.getClient('3');
+      const taskDetails = await this.graphClient
+        .api(`planner/tasks/${taskId}/details`)
+        .version('v1.0')
+        .headers({
+          'If-Match': '*'
+        })
+        .update({
+          description: description,
+          previewType: "automatic",
+        });
+
+      return taskDetails;
     } catch (error) {
       throw new Error('Error on add task');
     }
@@ -147,11 +184,19 @@ export default class spservices {
    */
   public async getPlanBuckets(planId: string): Promise<IPlannerBucket[]> {
     try {
-      const graph = graphfi().using(graphSPFx(this.context));
-      //const plan = await graph.planner.plans.getById(planId);
-      //const plannerBuckets: IPlannerBucket[] = await plan.buckets.get();
-      const plannerBuckets: IPlannerBucket[] = await graph.planner.plans.getById(planId).buckets();
-      return plannerBuckets;
+
+      //https://graph.microsoft.com/v1.0/planner/plans/CONGZUWfGUu4msTgNP66e2UAAySi/buckets
+      this.graphClient = await this.msGraphClientFactory.getClient('3');
+      const plannerBuckets = await this.graphClient
+        .api(`planner/plans/${planId}/buckets`)
+        .version('v1.0')
+        .get();
+
+
+      // const graph = graphfi().using(graphSPFx(this.context));
+      // const plannerBuckets: IPlannerBucket[] = await graph.planner.plans.getById(planId).buckets();
+
+      return plannerBuckets.value;
     } catch (error) {
       throw new Error('Error get Planner buckets');
     }
@@ -189,11 +234,17 @@ export default class spservices {
    */
   public async getUserPlansByGroupId(groupId: string): Promise<IPlannerPlan[]> {
     try {
+      // /https://graph.microsoft.com/v1.0/groups/1e770bc2-3c5f-487f-871f-16fbdf1c8ed8/planner/plans
+      this.graphClient = await this.msGraphClientFactory.getClient('3');
+      const groupPlans = await this.graphClient
+        .api(`groups/${groupId}/planner/plans`)
+        .version('v1.0')
+        .get();
+
       // const graph = graphfi().using(graphSPFx(this.context));
-      const graph = graphfi().using(DefaultHeaders());
-      const groupPlans: IPlannerPlan[] = await graph.groups.getById(groupId)();
-      console.log("groupPlans", groupPlans);
-      return groupPlans;
+      //const groupPlans: IPlannerPlan[] = await graph.groups.getById(groupId)();
+
+      return groupPlans.value;
     } catch (error) {
       Promise.reject(error);
     }
@@ -204,13 +255,15 @@ export default class spservices {
    * @returns user plans
    */
   public async getUserPlans(): Promise<IPlannerPlanExtended[]> {
+    //https://graph.microsoft.com/v1.0/groups/acbcf16c-c862-4c61-ae32-8f629366451a/photo/$value
     try {
       let userPlans: IPlannerPlanExtended[] = [];
       const o365Groups: IGroup[] = await this.getUserGroups();
       for (const group of o365Groups) {
         const plans: IPlannerPlan[] = await this.getUserPlansByGroupId(group.id);
         for (const plan of plans) {
-          const groupPhoto: string = await this.getGroupPhoto(group.id);
+          // const groupPhoto: string = await this.getGroupPhoto(group.id); //time consuming
+          const groupPhoto: string = '';
           const userPlan: IPlannerPlanExtended = { ...plan, planPhoto: groupPhoto };
           userPlans.push(userPlan);
         }
@@ -237,8 +290,18 @@ export default class spservices {
     return new Promise(async (resolve, reject) => {
       try {
         let url: any = '';
-        const graph = graphfi().using(graphSPFx(this.context));
-        const photo = await graph.groups.getById(groupId).photo.getBlob();
+        
+        this.graphClient = await this.msGraphClientFactory.getClient('3');
+        const photo = await this.graphClient
+          .api(`groups/${groupId}/photo/$value`)
+          .version('v1.0')
+          .get();
+
+        console.log("getGroupPhoto", photo);
+        
+        // const graph = graphfi().using(graphSPFx(this.context));
+        // const photo = await graph.groups.getById(groupId).photo.getBlob();
+
         let reader = new FileReader();
 
         reader.addEventListener(
@@ -249,7 +312,7 @@ export default class spservices {
           },
           false
         );
-        reader.readAsDataURL(photo); // converts the blob to base64 and calls onload
+        reader.readAsDataURL(photo.getBlob()); // converts the blob to base64 and calls onload
       } catch (error) {
         resolve(undefined);
       }
