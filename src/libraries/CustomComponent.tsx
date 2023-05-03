@@ -10,6 +10,12 @@ import { updateMyUserProfile, getmyUserProfileProps, getMyPropIds, getDefaultTas
 import { NewTask } from './NewTask/NewTask';
 import spservices from './Services/spservices';
 import SendEmail from './SendEmail/SendEmail';
+import { sp} from '@pnp/pnpjs';
+import {Web} from "@pnp/sp/presets/all";
+import { spfi, SPFx} from "@pnp/sp";
+import "@pnp/sp/webs";
+import { AssignFrom } from "@pnp/core";
+import { Caching } from "@pnp/queryable";
 
 export interface IObjectParam {
     myProperty: string;
@@ -27,6 +33,13 @@ export interface ICustomComponentProps {
 }
 
 export function CustomComponent (props: ICustomComponentProps){
+
+
+    //const sp = spfi().using();
+    //const web = Web([sp.web, 'https://pdsb1.sharepoint.com']);
+
+    const web = Web("https://pdsb1.sharepoint.com").using(SPFx({pageContext: props.pageContext})).using(Caching());
+    console.log("web", web);
 
     const dateOptions: any = { year: 'numeric', month: 'long', day: 'numeric' };
 
@@ -99,6 +112,11 @@ export function CustomComponent (props: ICustomComponentProps){
         setShowPlannerDlg(true);
     };
 
+    const sendEmailHandler = (pageDetails: any) => {
+        setTaskDetails(pageDetails);
+        setShowEmailDlg(true);
+    };
+
     const spTestFncs = () => {
         _spservices.getUserGroups().then(res => console.log("---- spServices : geUserGroups ----", res));
         _spservices.getUserPlansByGroupId('acbcf16c-c862-4c61-ae32-8f629366451a').then(res => console.log("---- spServices : getUserPlansByGroupId ----", res)); //Portal & Collaboration
@@ -142,7 +160,7 @@ export function CustomComponent (props: ICustomComponentProps){
                                     {page.RefinableString137 &&  <div>Attachments: {page.RefinableString137}</div>}
                                 
                                     <div className='actions'>
-                                        <button><img width='20' src={require('./icons/Outlook.svg')} />Send by E-mail</button>
+                                        <button onClick={() => sendEmailHandler(page)}><img width='20' src={require('./icons/Outlook.svg')} />Send by E-mail</button>
                                         <button className={!userTodosIds.has(page.ListItemID) ? '' : 'actionDisabled'} onClick={()=> addTodoHandler(page)}><img width='20' src={require('./icons/Todo.svg')} />{!userTodosIds.has(page.ListItemID) ? 'Add' : 'Added'} to Todo</button>
                                         <button onClick={() => taskDetailsPlannerHandler(page)}><img width='20' src={require('./icons/Planner.svg')} />Add to Planner</button>
                                     </div>
@@ -170,6 +188,7 @@ export function CustomComponent (props: ICustomComponentProps){
                     displayDialog = {showEmailDlg} 
                     onDismiss = {() => setShowEmailDlg(false)} 
                     taskDetails = {taskDetails}
+                    context = {web}
                 />
             }
             <IFrameDialog 
@@ -211,3 +230,4 @@ export class MyCustomComponentWebComponent extends BaseWebComponent {
         ReactDOM.render(customComponent, this);
     }    
 }
+
