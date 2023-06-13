@@ -45,8 +45,8 @@ export default class spservices {
 
     //const sp = spfi().using(spSPFx(this.context));
     console.log("pageContext", this.context)
-    this.currentUser = this.context._user.email;
-    this.msGraphClientFactory = this.msGraphClientFactory;
+    // this.currentUser = this.context._user.email;
+    // this.msGraphClientFactory = this.msGraphClientFactory;
     
   }
 
