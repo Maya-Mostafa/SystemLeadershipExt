@@ -71,4 +71,16 @@ https://stackoverflow.com/questions/48851611/how-can-i-create-a-planner-task-wit
 https://learn.microsoft.com/en-us/graph/api/resources/planner-overview?view=graph-rest-1.0#common-planner-error-conditions
 
 
+## Sending Email 
+
+- with spHttpClient
+https://sharepoint.stackexchange.com/questions/257460/send-an-email-with-sphttpclient
+- SPFx Send Email using PnP
+https://www.spguides.com/spfx-send-email/
+https://pnp.github.io/pnpjs/sp/sp-utilities-utility/
+https://www.c-sharpcorner.com/article/different-ways-to-send-email-from-spfx-webpart/
+- using REST
+https://mundrisoft.com/tech-bytes/how-to-send-an-email-using-rest-api-in-sharepoint/
+- using graph
+https://learn.microsoft.com/en-us/graph/api/user-sendmail?view=graph-rest-1.0&tabs=javascript
 
