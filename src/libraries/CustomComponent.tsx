@@ -2,20 +2,13 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { BaseWebComponent } from '@pnp/modern-search-extensibility';
 import { IFrameDialog } from "@pnp/spfx-controls-react/lib/IFrameDialog";
-import { DialogType, TooltipHost, IconButton, Icon } from 'office-ui-fabric-react';
-import {MSGraphClientFactory, SPHttpClient} from "@microsoft/sp-http";
+import { DialogType, TooltipHost, IconButton, Icon, Spinner, SpinnerSize } from 'office-ui-fabric-react';
+import {AadTokenProviderFactory, MSGraphClientFactory, SPHttpClient} from "@microsoft/sp-http";
 import { PageContext } from '@microsoft/sp-page-context';
-import { WebPartContext } from "@microsoft/sp-webpart-base";
 import { updateMyUserProfile, getmyUserProfileProps, getMyPropIds, getDefaultTaskListID, addToTasks } from './Services/DataRequests';
 import { NewTask } from './NewTask/NewTask';
 import spservices from './Services/spservices';
 import SendEmail from './SendEmail/SendEmail';
-import { sp} from '@pnp/pnpjs';
-import {Web} from "@pnp/sp/presets/all";
-import { spfi, SPFx} from "@pnp/sp";
-import "@pnp/sp/webs";
-import { AssignFrom } from "@pnp/core";
-import { Caching } from "@pnp/queryable";
 
 export interface IObjectParam {
     myProperty: string;
@@ -29,17 +22,12 @@ export interface ICustomComponentProps {
     pageContext?: PageContext; 
     sphttpClient?: SPHttpClient;
     msGraphClientFactory?: MSGraphClientFactory;
+    adTokenProviderFactory?: AadTokenProviderFactory;
     pages?: any;
+    context?: any;
 }
 
 export function CustomComponent (props: ICustomComponentProps){
-
-
-    //const sp = spfi().using();
-    //const web = Web([sp.web, 'https://pdsb1.sharepoint.com']);
-
-    const web = Web("https://pdsb1.sharepoint.com").using(SPFx({pageContext: props.pageContext})).using(Caching());
-    console.log("web", web);
 
     const dateOptions: any = { year: 'numeric', month: 'long', day: 'numeric' };
 
@@ -51,6 +39,8 @@ export function CustomComponent (props: ICustomComponentProps){
 
     const [hideDialog, setHideDialog] = React.useState(true);
     const [pageUrl, setPageUrl] = React.useState('');
+    const [isAddingTodo, setIsAddingToDo] = React.useState(false);
+    const [activeItem, setActiveItem] = React.useState('');
 
     const [showPlannerDlg, setShowPlannerDlg] = React.useState(false);
     const [taskDetails, setTaskDetails] = React.useState(null);
@@ -94,6 +84,8 @@ export function CustomComponent (props: ICustomComponentProps){
 
     const addTodoHandler = (page: any) => {
         console.log("addTodoHandler");
+        setIsAddingToDo(true);
+        setActiveItem(page.ListItemID);
         if (!userTodosIds.has(page.ListItemID)){
             console.log("addTodoHandler active");
             getDefaultTaskListID(props.msGraphClientFactory).then(resId => {
@@ -102,7 +94,7 @@ export function CustomComponent (props: ICustomComponentProps){
                 const cloneIds = new Set(userTodosIds);
                 cloneIds.add(page.ListItemID);
                 setUserTodosIds(cloneIds);
-                updateMyUserProfile(props.pageContext, props.sphttpClient, cloneIds, profilePropTodos);
+                updateMyUserProfile(props.pageContext, props.sphttpClient, cloneIds, profilePropTodos).then(() => setIsAddingToDo(false));
             });
         }
     };
@@ -122,10 +114,8 @@ export function CustomComponent (props: ICustomComponentProps){
         _spservices.getUserPlansByGroupId('acbcf16c-c862-4c61-ae32-8f629366451a').then(res => console.log("---- spServices : getUserPlansByGroupId ----", res)); //Portal & Collaboration
     };
 
-
-
     // console.log(props.pages);
-    // console.log(props.pageContext);
+    console.log("props", props);
 
     return (
         <>
@@ -161,7 +151,15 @@ export function CustomComponent (props: ICustomComponentProps){
                                 
                                     <div className='actions'>
                                         <button onClick={() => sendEmailHandler(page)}><img width='20' src={require('./icons/Outlook.svg')} />Send by E-mail</button>
-                                        <button className={!userTodosIds.has(page.ListItemID) ? '' : 'actionDisabled'} onClick={()=> addTodoHandler(page)}><img width='20' src={require('./icons/Todo.svg')} />{!userTodosIds.has(page.ListItemID) ? 'Add' : 'Added'} to Todo</button>
+                                        <button className={!userTodosIds.has(page.ListItemID) ? '' : 'actionDisabled'} onClick={()=> addTodoHandler(page)}>
+                                            {isAddingTodo && activeItem === page.ListItemID
+                                                ?
+                                                <Spinner size={SpinnerSize.small} />
+                                                :
+                                                <img width='20' src={require('./icons/Todo.svg')} />
+                                            }
+                                            {!userTodosIds.has(page.ListItemID) ? 'Add' : 'Added'} to Todo
+                                        </button>
                                         <button onClick={() => taskDetailsPlannerHandler(page)}><img width='20' src={require('./icons/Planner.svg')} />Add to Planner</button>
                                     </div>
                                 </div>
@@ -188,7 +186,7 @@ export function CustomComponent (props: ICustomComponentProps){
                     displayDialog = {showEmailDlg} 
                     onDismiss = {() => setShowEmailDlg(false)} 
                     taskDetails = {taskDetails}
-                    context = {web}
+                    context = {props.context}
                 />
             }
             <IFrameDialog 
@@ -214,19 +212,33 @@ export class MyCustomComponentWebComponent extends BaseWebComponent {
     private sphttpClient: SPHttpClient;
     private pageContext: PageContext;
     private msGraphClientFactory: MSGraphClientFactory;
-
+    private aadTokenProviderFactory: AadTokenProviderFactory;
+    
     public constructor() {
         super(); 
         this._serviceScope.whenFinished(()=>{
             this.pageContext = this._serviceScope.consume(PageContext.serviceKey);
             this.sphttpClient = this._serviceScope.consume(SPHttpClient.serviceKey);
             this.msGraphClientFactory = this._serviceScope.consume(MSGraphClientFactory.serviceKey);
+            this.aadTokenProviderFactory = this._serviceScope.consume(AadTokenProviderFactory.serviceKey);
         });
     }
  
     public async connectedCallback() {
-        let props = this.resolveAttributes();
-        const customComponent = <CustomComponent pageContext={this.pageContext} sphttpClient={this.sphttpClient} msGraphClientFactory={this.msGraphClientFactory} {...props}/>;
+        let props = this.resolveAttributes() as ICustomComponentProps;
+        props.pageContext = this.pageContext;
+        props.sphttpClient = this.sphttpClient;  
+        props.msGraphClientFactory = this.msGraphClientFactory;
+        props.adTokenProviderFactory = this.aadTokenProviderFactory;
+
+        props.context = {};
+        props.context.serviceScope = this._serviceScope;
+        props.context.pageContext = this._serviceScope.consume(PageContext.serviceKey);
+        props.context.spHttpClient = this._serviceScope.consume(SPHttpClient.serviceKey);  
+        props.context.msGraphClientFactory = this._serviceScope.consume(MSGraphClientFactory.serviceKey);
+        props.context.aadTokenProviderFactory = this._serviceScope.consume(AadTokenProviderFactory.serviceKey);
+
+        const customComponent = <CustomComponent {...props} />;
         ReactDOM.render(customComponent, this);
     }    
 }
