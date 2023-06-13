@@ -1,5 +1,79 @@
 import {SPHttpClient, ISPHttpClientOptions} from "@microsoft/sp-http";
 
+import { spfi, SPFx } from "@pnp/sp";
+import "@pnp/sp/sputilities";
+import { IEmailProperties } from "@pnp/sp/sputilities";
+
+export const sendEmailPnP = async (context: any, recipient: string, sender: string, taskDetails: any, body: string) => {
+    const sp = spfi().using(SPFx(context));
+    const emailProps: IEmailProperties = {
+        To: recipient.split(';'),
+        From: sender,
+        Subject: taskDetails.Title,
+        Body: body,
+        AdditionalHeaders: {
+            "content-type": "text/html"
+        }
+    };
+
+    await sp.utility.sendEmail(emailProps);
+    console.log("Email Sent!");
+
+};
+
+export const sendEmailSP = async (context: any, sphttpClient: any) => {
+
+    const siteUrl = context.pageContext._web.serverRelativeUrl;
+    const emailUrl = siteUrl + '/_api/SP.Utilities.Utility.SendEmail';
+
+    console.log("emailUrl", emailUrl);
+
+    const   reqOptions: ISPHttpClientOptions  = {
+            headers: {
+                "Accept": "application/json;odata=verbose",
+                "Content-Type": "application/json;odata=verbose",
+                "odata-version":"3.0",
+            },
+            body: JSON.stringify({
+                'properties': {
+                    '__metadata': { 'type': 'SP.Utilities.EmailProperties' },
+                    'To': { 'results': ['mai.mostafa@peelsb.com'] },
+                    'Body': 'Ignore this test email.',
+                    'Subject': 'Subject Test Email',
+                    'From' : 'mai.mostafa@peelsb.com'
+                }
+            })
+    };
+
+    const _data = await sphttpClient.post(emailUrl, SPHttpClient.configurations.v1, reqOptions);
+    if (_data.ok){
+        console.log('Email Sent!');
+    }
+};
+
+export const sendEmailGraph = async (msGraphClientFactory: any, recipients: any, subject: string, body: string) => {
+    
+    const emailARs = recipients.map(item => { return {emailAddress: {address: item}} });
+
+    const sendMail = {
+        message: {
+          subject: subject,
+          body: {
+            contentType: 'HTML',
+            content: body
+          },
+          toRecipients: emailARs,
+        },
+        saveToSentItems: 'true'
+      };
+
+      const graphClient = await msGraphClientFactory.getClient();
+      const graphPostResponse = await graphClient.api("/me/sendMail").post(sendMail);
+
+      return graphPostResponse;
+};
+
+
 export const getmyUserProfileProps = async (sphttpClient: any) => {
     const responseUrl = `https://pdsb1.sharepoint.com/_api/SP.UserProfiles.PeopleManager/GetMyProperties` ;
     
