@@ -90,6 +90,11 @@ export default function SendEmail (props: ISendEmailProps){
         }
     };
 
+    const peoplePickerErrorHandler = (items: any[]) => {
+        if (items.length === 0)
+            return 'This field is required'
+    };
+
     return(
         <>
             <Dialog
@@ -103,13 +108,14 @@ export default function SendEmail (props: ISendEmailProps){
                     <PeoplePicker
                         context={props.context}
                         personSelectionLimit={10}
-                        showHiddenInUI={false}
                         groupName={''}
                         resolveDelay={1000}
                         ensureUser={true}
                         onChange={getPeoplePickerItems}
                         required
-                        errorMessage={'This field is required'}
+                        // errorMessage={'This field is required'}
+                        validateOnFocusOut
+                        onGetErrorMessage={peoplePickerErrorHandler}
                     /> 
                     <br />
                     <TextField 
