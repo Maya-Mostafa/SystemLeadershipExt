@@ -23,7 +23,7 @@ export default function SendEmail (props: ISendEmailProps){
     const [recipients, setRecipients] = React.useState([]);
 
     const getPeoplePickerItems = (items: any[]) => {
-        console.log("people picker items", items);
+        // console.log("people picker items", items);
         setRecipients(items.map(item => item.secondaryText));
     };
 
@@ -84,8 +84,10 @@ export default function SendEmail (props: ISendEmailProps){
     `;
     
     const sendEmailHandler = () => {
-        sendEmailGraph(props.context.msGraphClientFactory, recipients, props.taskDetails.Title, emailBody);
-        props.onDismiss();
+        if (recipients.length !== 0){
+            sendEmailGraph(props.context.msGraphClientFactory, recipients, props.taskDetails.Title, emailBody);
+            props.onDismiss();
+        }
     };
 
     return(
@@ -106,6 +108,8 @@ export default function SendEmail (props: ISendEmailProps){
                         resolveDelay={1000}
                         ensureUser={true}
                         onChange={getPeoplePickerItems}
+                        required
+                        errorMessage={'This field is required'}
                     /> 
                     <br />
                     <TextField 
