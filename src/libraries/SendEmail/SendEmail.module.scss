@@ -1,7 +1,7 @@
 .sendEmail{
     margin-top: 20px;
     a{
-        display: inline-block;
+        display: block;
         color: #0078d4;
         font-weight: 600;
         font-size: 14px;
@@ -10,5 +10,8 @@
         &:hover{
             text-decoration: underline;
         }
+    }
+    a.imgLink{
+        display: inline-block;
     }
 }

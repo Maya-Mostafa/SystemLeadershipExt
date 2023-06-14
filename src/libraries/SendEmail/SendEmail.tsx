@@ -29,7 +29,7 @@ export default function SendEmail (props: ISendEmailProps){
 
     const messageBody = 
         <div className={styles.sendEmail}>
-            <a href={props.taskDetails.Path}>
+            <a className={styles.imgLink} href={props.taskDetails.Path}>
                 <img height={135} src={props.taskDetails.AutoPreviewImageUrl} alt={props.taskDetails.Title} />
             </a>
             <a href={props.taskDetails.Path}>
