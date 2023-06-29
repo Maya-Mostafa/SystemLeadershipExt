@@ -202,11 +202,11 @@ export class NewTask extends React.Component<INewTaskProps, INewTaskState> {
         console.log("this._userPlans", this._userPlans);
       if (this._userPlans.length > 0) {
         for (const plan of this._userPlans) {
-          this._PlansDropDownOption.push({ key: String(plan.id), text: plan.title, data: { image: '', groupId: plan.owner} });
+          this._PlansDropDownOption.push({ key: String(plan.id), text: plan.title, data: { image: plan.planPhoto, groupId: plan.owner} });
         }
         // Get Planner Buckets
         const bucketsMenu = await this._getPlannerBuckets(String(this._PlansDropDownOption[0].key));
-        console.log("bucketsMenu", bucketsMenu);
+        //console.log("bucketsMenu", bucketsMenu);
         this.setState({
           buckets: bucketsMenu,
           selectedBucket: {key : bucketsMenu[0].key , name: bucketsMenu[0].name},

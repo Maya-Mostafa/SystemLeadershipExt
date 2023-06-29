@@ -256,14 +256,15 @@ export default class spservices {
    */
   public async getUserPlans(): Promise<IPlannerPlanExtended[]> {
     //https://graph.microsoft.com/v1.0/groups/acbcf16c-c862-4c61-ae32-8f629366451a/photo/$value
+    console.log("getUserPlans()");
     try {
       let userPlans: IPlannerPlanExtended[] = [];
       const o365Groups: IGroup[] = await this.getUserGroups();
       for (const group of o365Groups) {
         const plans: IPlannerPlan[] = await this.getUserPlansByGroupId(group.id);
         for (const plan of plans) {
-          // const groupPhoto: string = await this.getGroupPhoto(group.id); //time consuming
-          const groupPhoto: string = '';
+          const groupPhoto: string = await this.getGroupPhoto(group.id); //time consuming
+          //const groupPhoto: string = '';
           const userPlan: IPlannerPlanExtended = { ...plan, planPhoto: groupPhoto };
           userPlans.push(userPlan);
         }
@@ -287,21 +288,37 @@ export default class spservices {
    * @returns group photo
    */
   public async getGroupPhoto(groupId: string): Promise<any> {
+    console.log("getGroupPhoto()");
     return new Promise(async (resolve, reject) => {
+
       try {
+        console.log("getGroupPhoto() try{}");
+        this.graphClient = await this.msGraphClientFactory.getClient('3');
+        const blob = await this.graphClient.api(`groups/${groupId}/photo/$value`).get();
+        const blobUrl = window.URL.createObjectURL(blob)
+        resolve(blobUrl);
+      }catch (error) {
+        console.log("getGroupPhoto() catch{} undefined")
+        resolve(undefined);
+      }
+
+      /*
+      try {
+        console.log("getGroupPhoto() try{}");
         let url: any = '';
         
         this.graphClient = await this.msGraphClientFactory.getClient('3');
-        const photo = await this.graphClient
-          .api(`groups/${groupId}/photo/$value`)
-          .version('v1.0')
-          .get();
+        const photo = await this.graphClient.api(`groups/${groupId}/photo`).get();
+          
+        const photoBlob = photo.getBlob();
 
-        console.log("getGroupPhoto", photo);
+        console.log("photo", photo);
+        console.log("photoBlob", photoBlob);
         
         // const graph = graphfi().using(graphSPFx(this.context));
         // const photo = await graph.groups.getById(groupId).photo.getBlob();
 
+        
         let reader = new FileReader();
 
         reader.addEventListener(
@@ -313,9 +330,15 @@ export default class spservices {
           false
         );
         reader.readAsDataURL(photo.getBlob()); // converts the blob to base64 and calls onload
+        
+
       } catch (error) {
+        console.log("getGroupPhoto() catch{} undefined")
         resolve(undefined);
       }
+      */
+
+
     });
   }
 
