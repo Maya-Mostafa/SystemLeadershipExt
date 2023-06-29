@@ -406,7 +406,7 @@ export class NewTask extends React.Component<INewTaskProps, INewTaskState> {
                       // onChange={() => this._changeTaskName}
                     />
                     <Stack gap='0'>
-                      <CommandButton
+                      {/* <CommandButton
                         id='ContextualMenuButton1'
                         text={this.state.selectedBucket.name}
                         title='select bucket'
@@ -421,7 +421,7 @@ export class NewTask extends React.Component<INewTaskProps, INewTaskState> {
                           items: this.state.buckets
                         }}
 
-                      />
+                      /> */}
 
                       <DatePicker
                         title='Select due date'
