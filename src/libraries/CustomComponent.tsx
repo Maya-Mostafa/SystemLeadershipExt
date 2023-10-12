@@ -122,6 +122,9 @@ export function CustomComponent (props: ICustomComponentProps){
             {/* <button onClick={spTestFncs}>Test sp functions</button> */}
             <ul className='template--defaultList'>
                 {props.pages.items.map(page => {
+
+                    const isConfidential = page.Path.toLowerCase().indexOf('confidential') !== -1 ? true : false;
+
                     return (
                         <li className='template--listItem'>
                             {!userSysLinksPropIds.has(page.ListItemID) 
@@ -148,9 +151,9 @@ export function CustomComponent (props: ICustomComponentProps){
                                     </span>
                                     {(page.TaskDueDateOWSDATE || page.RefinableString110) && <span className='due-date'><Icon iconName='Calendar' />Due by: {page.TaskDueDateOWSDATE || page.RefinableString110}</span> }
                                     {page.RefinableString137 &&  <div>Attachments: {page.RefinableString137}</div>}
-                                
+
                                     <div className='actions'>
-                                        <button onClick={() => sendEmailHandler(page)}><img width='20' src={require('./icons/Outlook.svg')} />Send by E-mail</button>
+                                        {!isConfidential &&<button onClick={() => sendEmailHandler(page)}><img width='20' src={require('./icons/Outlook.svg')} />Send by E-mail</button>}
                                         <button className={!userTodosIds.has(page.ListItemID) ? '' : 'actionDisabled'} onClick={()=> addTodoHandler(page)}>
                                             {isAddingTodo && activeItem === page.ListItemID
                                                 ?
@@ -160,7 +163,7 @@ export function CustomComponent (props: ICustomComponentProps){
                                             }
                                             {!userTodosIds.has(page.ListItemID) ? 'Add' : 'Added'} to Todo
                                         </button>
-                                        <button onClick={() => taskDetailsPlannerHandler(page)}><img width='20' src={require('./icons/Planner.svg')} />Add to Planner</button>
+                                        {!isConfidential &&<button onClick={() => taskDetailsPlannerHandler(page)}><img width='20' src={require('./icons/Planner.svg')} />Add to Planner</button>}
                                     </div>
                                 </div>
                             </div>
