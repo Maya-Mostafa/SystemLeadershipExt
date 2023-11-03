@@ -2,7 +2,7 @@
   "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
   "solution": {
     "name": "PnP Modern Search Ext - System Leadership",
-    "id": "4896309f-54bc-48f2-a7ee-0785e019d195",
+    "id": "f5da299a-4c3d-40d5-b9a4-f5cb02443970",
     "version": "4.1.0.0",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": true,

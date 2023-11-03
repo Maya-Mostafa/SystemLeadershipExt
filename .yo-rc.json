@@ -5,7 +5,7 @@
         "environment": "spo",
         "version": "1.14.0",
         "libraryName": "pnp-extensibility-starter",
-        "libraryId": "4896309f-54bc-48f2-a7ee-0785e019d195",
+        "libraryId": "f5da299a-4c3d-40d5-b9a4-f5cb02443970",
         "isDomainIsolated": false,
         "componentType": "library"
     }
