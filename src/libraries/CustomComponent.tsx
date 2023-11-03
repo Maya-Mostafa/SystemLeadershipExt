@@ -152,6 +152,7 @@ export function CustomComponent (props: ICustomComponentProps){
                                     {(page.TaskDueDateOWSDATE || page.RefinableString110) && <span className='due-date'><Icon iconName='Calendar' />Due by: {page.TaskDueDateOWSDATE || page.RefinableString110}</span> }
                                     {page.RefinableString137 &&  <div>Attachments: {page.RefinableString137}</div>}
                                     <div className='sysSummary'>{page.HitHighlightedSummary}</div>
+                                    {page.RefinableString03 && <span><span className='template--listItem--author'>Panel: </span><span className='template--listItem--date'>{page.RefinableString03}</span></span>}
                                     <div className='actions'>
                                         {!isConfidential &&<button onClick={() => sendEmailHandler(page)}><img width='20' src={require('./icons/Outlook.svg')} />Send by E-mail</button>}
                                         <button className={!userTodosIds.has(page.ListItemID) ? '' : 'actionDisabled'} onClick={()=> addTodoHandler(page)}>
