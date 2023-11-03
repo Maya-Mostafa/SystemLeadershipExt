@@ -116,7 +116,7 @@ export default function SendEmail (props: ISendEmailProps){
                         // errorMessage={'This field is required'}
                         validateOnFocusOut
                         onGetErrorMessage={peoplePickerErrorHandler}
-                        principalTypes={[PrincipalType.User, PrincipalType.DistributionList, PrincipalType.SharePointGroup, PrincipalType.SecurityGroup]}
+                        principalTypes={[PrincipalType.User, PrincipalType.DistributionList]}
                     /> 
                     <br />
                     <TextField 
