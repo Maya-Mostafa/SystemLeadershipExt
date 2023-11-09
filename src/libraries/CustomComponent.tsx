@@ -29,7 +29,7 @@ export interface ICustomComponentProps {
 
 export function CustomComponent (props: ICustomComponentProps){
 
-    const dateOptions: any = { year: 'numeric', month: 'long', day: 'numeric' };
+    const dateOptions: any = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
 
     const profilePropSystemLinks = 'PDSBSystemLinks';
     const [userSysLinksPropIds, setUserSysLinksPropIds] = React.useState(new Set());
@@ -127,6 +127,11 @@ export function CustomComponent (props: ICustomComponentProps){
 
                     return (
                         <li className='template--listItem'>
+                            <div className='template--listItem--thumbnailContainer'>
+                                <div className='thumbnail--image'>
+                                    <img width="200" src={page.AutoPreviewImageUrl} />
+                                </div>
+                            </div>
                             {!userSysLinksPropIds.has(page.ListItemID) 
                                 ?
                                 <TooltipHost content="Check done" calloutProps={{ gapSpace: 0 }}>
@@ -147,9 +152,12 @@ export function CustomComponent (props: ICustomComponentProps){
                                     </span>
                                     <span>
                                         {page.AuthorOWSUSER &&<span className='template--listItem--author'>{page.AuthorOWSUSER.split('|')[1]}</span>}
-                                        <span className='template--listItem--date'>{new Date(page.Created).toLocaleDateString('en-us', dateOptions)}</span>
+                                        <span className='template--listItem--date'>  
+                                        <Icon iconName='Calendar' /> <b>Created</b>: {new Date(page.Created).toLocaleDateString('en-us', dateOptions)}
+                                            {page.Created !== page.ModifiedOWSDATE && <span>, <b>Modified</b>: {new Date(page.ModifiedOWSDATE).toLocaleDateString('en-us', dateOptions)}</span>}
+                                        </span>
                                     </span>
-                                    {(page.TaskDueDateOWSDATE || page.RefinableString110) && <span className='due-date'><Icon iconName='Calendar' />Due by: {page.TaskDueDateOWSDATE || page.RefinableString110}</span> }
+                                    {(page.TaskDueDateOWSDATE || page.RefinableString110) && <span className='due-date'><Icon iconName='PrimaryCalendar' />Due by: {page.TaskDueDateOWSDATE || page.RefinableString110}</span> }
                                     {page.RefinableString137 &&  <div>Attachments: {page.RefinableString137}</div>}
                                     <div className='sysSummary'>{page.HitHighlightedSummary}</div>
                                     {page.RefinableString03 && <span><span className='template--listItem--author'>Panel: </span><span className='template--listItem--date'>{page.RefinableString03}</span></span>}
@@ -168,11 +176,7 @@ export function CustomComponent (props: ICustomComponentProps){
                                     </div>
                                 </div>
                             </div>
-                            <div className='template--listItem--thumbnailContainer'>
-                                <div className='thumbnail--image'>
-                                    <img width="120" src={page.AutoPreviewImageUrl} />
-                                </div>
-                            </div>
+                            
                         </li>
                     );
                 })}
