@@ -127,11 +127,12 @@ export function CustomComponent (props: ICustomComponentProps){
 
                     return (
                         <li className='template--listItem'>
-                            <div className='template--listItem--thumbnailContainer'>
+                            <div className='template--listItem--thumbnailContainer' style={{width: '15%'}}>
                                 <div className='thumbnail--image'>
-                                    <img width="200" src={page.AutoPreviewImageUrl} />
+                                    <img style={{width: '100%'}} src={page.AutoPreviewImageUrl} />
                                 </div>
                             </div>
+                            <div style={{display: 'flex', width: '80%'}}>
                             {!userSysLinksPropIds.has(page.ListItemID) 
                                 ?
                                 <TooltipHost content="Check done" calloutProps={{ gapSpace: 0 }}>
@@ -144,7 +145,7 @@ export function CustomComponent (props: ICustomComponentProps){
                             }
                             <div className='template--listItem--result'>
                                 <div className='template--listItem--contentContainer'>
-                                    {page.MMIntranetDeptSubDeptGrouping && <span className="dept-hdr">{page.MMIntranetDeptSubDeptGrouping}</span>} 
+                                    <span className="dept-hdr">{isConfidential ? 'Confidential' : 'System'}</span>
                                     <span className='template--listItem--title example-themePrimary'>
                                         <a data-interception="off" target='_blank' href={page.Path} className='page-link'>{page.Title}</a>
                                         {/* <a className='page-link' onClick={() => dialogOpenHandler(page.Path)}>{page.Title}</a> */}
@@ -160,6 +161,7 @@ export function CustomComponent (props: ICustomComponentProps){
                                     {(page.TaskDueDateOWSDATE || page.RefinableString110) && <span className='due-date'><Icon iconName='PrimaryCalendar' />Due by: {page.TaskDueDateOWSDATE || page.RefinableString110}</span> }
                                     {page.RefinableString137 &&  <div>Attachments: {page.RefinableString137}</div>}
                                     <div className='sysSummary'>{page.HitHighlightedSummary}</div>
+                                    {page.MMIntranetDeptSubDeptGrouping && <span><span className='template--listItem--author'>Department: </span><span className='template--listItem--date'>{page.MMIntranetDeptSubDeptGrouping}</span></span>}
                                     {page.RefinableString03 && <span><span className='template--listItem--author'>Panel: </span><span className='template--listItem--date'>{page.RefinableString03}</span></span>}
                                     <div className='actions'>
                                         {!isConfidential &&<button onClick={() => sendEmailHandler(page)}><img width='20' src={require('./icons/Outlook.svg')} />Send by E-mail</button>}
@@ -176,7 +178,7 @@ export function CustomComponent (props: ICustomComponentProps){
                                     </div>
                                 </div>
                             </div>
-                            
+                            </div>
                         </li>
                     );
                 })}
